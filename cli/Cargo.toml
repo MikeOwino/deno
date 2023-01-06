@@ -104,7 +104,7 @@ shell-escape = "=0.1.5"
 tar = "=0.4.38"
 text-size = "=1.1.0"
 text_lines = "=0.6.0"
-tokio = { version = "=1.21.1", features = ["full"] }
+tokio = { version = "=1.23.1", features = ["full"] }
 tokio-util = "=0.7.4"
 tower-lsp = { version = "=0.17.0", features = ["proposed"] }
 twox-hash = "=1.6.3"

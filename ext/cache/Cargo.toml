@@ -19,4 +19,4 @@ deno_core = { version = "0.155.0", path = "../../core" }
 rusqlite = { version = "0.28.0", features = ["unlock_notify", "bundled"] }
 serde = { version = "1.0.129", features = ["derive"] }
 sha2 = "0.10.2"
-tokio = { version = "1.19", features = ["full"] }
+tokio = { version = "1.23", features = ["full"] }
