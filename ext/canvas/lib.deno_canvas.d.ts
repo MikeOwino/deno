@@ -1,4 +1,4 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 // deno-lint-ignore-file no-var
 
@@ -42,7 +42,7 @@ type ResizeQuality = "high" | "low" | "medium" | "pixelated";
  * used to create an `ImageBitmap`.
  *
  * @category Canvas */
-type ImageBitmapSource = Blob | ImageData;
+type ImageBitmapSource = Blob | ImageData | ImageBitmap;
 
 /**
  * The options of {@linkcode createImageBitmap}.

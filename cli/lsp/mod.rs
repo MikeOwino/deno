@@ -1,16 +1,15 @@
-// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// Copyright 2018-2025 the Deno authors. MIT license.
 
 use deno_core::error::AnyError;
 use deno_core::unsync::spawn;
+pub use repl::ReplCompletionItem;
+pub use repl::ReplLanguageServer;
 use tower_lsp::LspService;
 use tower_lsp::Server;
 
+use self::diagnostics::should_send_diagnostic_batch_index_notifications;
 use crate::lsp::language_server::LanguageServer;
 use crate::util::sync::AsyncFlag;
-pub use repl::ReplCompletionItem;
-pub use repl::ReplLanguageServer;
-
-use self::diagnostics::should_send_diagnostic_batch_index_notifications;
 
 mod analysis;
 mod cache;
@@ -37,6 +36,7 @@ mod search;
 mod semantic_tokens;
 mod testing;
 mod text;
+mod trace;
 mod tsc;
 mod urls;
 
@@ -56,9 +56,6 @@ pub async fn start() -> Result<(), AnyError> {
     LanguageServer::performance_request,
   )
   .custom_method(lsp_custom::TASK_REQUEST, LanguageServer::task_definitions)
-  // TODO(nayeemrmn): Rename this to `deno/taskDefinitions` in vscode_deno and
-  // remove this alias.
-  .custom_method("deno/task", LanguageServer::task_definitions)
   .custom_method(testing::TEST_RUN_REQUEST, LanguageServer::test_run_request)
   .custom_method(
     testing::TEST_RUN_CANCEL_REQUEST,
@@ -78,7 +75,7 @@ pub async fn start() -> Result<(), AnyError> {
     builder
   };
 
-  let (service, socket) = builder.finish();
+  let (service, socket, pending) = builder.finish();
 
   // TODO(nayeemrmn): This shutdown flag is a workaround for
   // https://github.com/denoland/deno/issues/20700. Remove when
@@ -86,7 +83,7 @@ pub async fn start() -> Result<(), AnyError> {
   // Force end the server 8 seconds after receiving a shutdown request.
   tokio::select! {
     biased;
-    _ = Server::new(stdin, stdout, socket).serve(service) => {}
+    _ = Server::new(stdin, stdout, socket, pending).concurrency_level(32).serve(service) => {}
     _ = spawn(async move {
       shutdown_flag.wait_raised().await;
       tokio::time::sleep(std::time::Duration::from_secs(8)).await;
